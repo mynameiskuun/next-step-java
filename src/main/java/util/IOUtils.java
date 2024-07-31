@@ -1,5 +1,7 @@
 package util;
 
+import com.google.common.base.Strings;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 
@@ -16,5 +18,32 @@ public class IOUtils {
         char[] body = new char[contentLength];
         br.read(body, 0, contentLength);
         return String.copyValueOf(body);
+    }
+
+    public static String getContentType(String url) {
+        if (url.endsWith(".html")) {
+            return "text/html";
+        } else if (url.endsWith(".css")) {
+            return "text/css";
+        } else if (url.endsWith(".js")) {
+            return "application/javascript";
+        } else if (url.endsWith(".png")) {
+            return "image/png";
+        } else if (url.endsWith(".jpg") || url.endsWith(".jpeg")) {
+            return "image/jpeg";
+        } else if (url.endsWith(".gif")) {
+            return "image/gif";
+        } else {
+            return "application/octet-stream";
+        }
+    }
+
+    public static String getUrlFromFirstLine(String input) {
+
+        if (Strings.isNullOrEmpty(input)) {
+            return "";
+        }
+        String[] inputArray = input.split(" ");
+        return inputArray[1];
     }
 }

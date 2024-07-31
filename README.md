@@ -15,8 +15,18 @@
 * 각 요구사항을 구현하는 것이 중요한 것이 아니라 구현 과정을 통해 학습한 내용을 인식하는 것이 배움에 중요하다. 
 
 ### 요구사항 1 - http://localhost:8080/index.html로 접속시 응답
-* kun-webservice.site:8080 접속시 응답 (OCI 환경)
+* kun-webservice.site:8080/index.html 접속시 응답 (OCI 환경)
 * docker run -d -p 8080:8080 --name custom-web-server custom-web-server
+
+- - -
+* 소켓 / InputStream / OutputStream에 대한 이해
+* 웹 요청 시 DataInputStream에 담기는 plain 데이터
+![img.png](./for-readme/request-plain-data.png)
+* URL 추출하기
+  * 요청 URL은 가장 첫번째 라인의 [1]번째에 위치. Util 클래스에 getUrlFromFirstLine 메소드 작성
+* static 파일 별 헤더 셋업
+  * .js/.css 등 다양한 resource 파일을 브라우저가 읽어들이기 위해서 형식(Content-type)을 지정 해야 함.
+  * 마찬가지로 Util 클래스에 getContentType 메소드 작성하여 요청 별 header / body set-up 필요
 
 ### 요구사항 2 - get 방식으로 회원가입
 * 
