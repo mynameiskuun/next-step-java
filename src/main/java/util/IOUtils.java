@@ -34,7 +34,7 @@ public class IOUtils {
         } else if (url.endsWith(".gif")) {
             return "image/gif";
         } else {
-            return "application/octet-stream";
+            return "text/plain";
         }
     }
 

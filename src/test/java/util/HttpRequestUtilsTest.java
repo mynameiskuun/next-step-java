@@ -70,4 +70,18 @@ public class HttpRequestUtilsTest {
         Pair pair = HttpRequestUtils.parseHeader(header);
         assertThat(pair, is(new Pair("Content-Length", "59")));
     }
+
+    @Test
+    public void URLtest() {
+        String url = "http://kun-webservice.site:8080/user/create?userId=&password=&name=&email=";
+        String DOMAIN = "http://kun-webservice.site:" + 8080;
+
+        String fullPath = url.replace(DOMAIN, "");
+        String path = fullPath.substring(0, fullPath.indexOf("?"));
+        String parameters = fullPath.substring(fullPath.indexOf("?") + 1, fullPath.length());
+
+        System.out.println("fullPath : " + fullPath);
+        System.out.println("path : " + path);
+        System.out.println("parameters : " + parameters);
+    }
 }
