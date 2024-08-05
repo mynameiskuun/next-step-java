@@ -3,10 +3,14 @@ package webserver;
 import java.io.*;
 import java.net.Socket;
 import java.nio.file.Files;
-import java.nio.file.Path;
+import java.util.Map;
 
+import db.DataBase;
+import model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import service.UserCreateService;
+import util.HttpRequestUtils;
 import util.IOUtils;
 
 public class RequestHandler extends Thread {
@@ -29,18 +33,96 @@ public class RequestHandler extends Thread {
 
             UrlDispatcher dispatcher = new UrlDispatcher();
             BufferedReader br = new BufferedReader(inputStreamReader);
+            StringBuilder sb = new StringBuilder();
 
-            String firstLine = br.readLine();
-            String url = IOUtils.getUrlFromFirstLine(firstLine);
+            String header = IOUtils.readHeaders(br, sb);
+            String url = IOUtils.getUrlFromHeader(header);
+            String host = IOUtils.getValueFromHeader(header, "Host");
+            String requestBody = IOUtils.readResponseBody(br, sb, header);
+            String methodType = IOUtils.getMethodTypeFromHeader(header);
+
+            UserCreateService userCreateService = new UserCreateService();
+            DataOutputStream dos = new DataOutputStream(out);
+
             log.info("url : {}", url);
+            log.info("requestBody : {}", requestBody);
+            log.info("methodType : {}", methodType);
 
-            byte[] readData = dispatcher.disaptch(url);
+            User user = null;
+            if(methodType.equals("POST") && url.equals("/user/create")) {
+                user = userCreateService.createUser(requestBody);
+                log.debug("#### crate user Success. ID : {} | password : {} | name : {} | email : {} ####", user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
+                byte[] readData = ("create user Success." + user).getBytes();
+                DataBase.addUser(user);
+                response302Header(dos);
+                responseBody(dos, readData);
+                return;
+            }
 
+            if(methodType.equals("POST") && url.equals("/user/login")) {
+                Map<String, String> params = HttpRequestUtils.parseQueryString(requestBody);
+                String id = params.get("userId");
+                String pw = params.get("password");
+
+                User loginUser = DataBase.findUserById(id);
+                boolean loginStatus = loginUser != null && loginUser.getPassword().equals(pw);
+
+                String redirectUrl = "";
+                if (loginStatus) {
+                    redirectUrl = "index.html";
+                } else {
+                    redirectUrl = "user/login_failed.html";
+                }
+                response302HeaderWithCookie(dos, redirectUrl, loginStatus);
+            }
+
+            if(url.equals("/user/list")) {
+                String cookies = IOUtils.getValueFromHeader(header, "Cookie");
+                Map<String, String> cookieMap = HttpRequestUtils.parseCookies(cookies);
+
+                if(Boolean.parseBoolean(cookieMap.get("logined"))) {
+                    sb.append("#### 사용자 목록 ####");
+                    DataBase.findAll().stream().forEach(u -> {
+                        sb.append("id : ").append(u.getUserId()).append("name : ").append(u.getName());
+                    });
+
+                    byte[] readData = sb.toString().getBytes();
+                    //response302Header(dos);
+                    responseBody(dos, readData);
+                    return;
+                } else {
+                    response302HeaderWithCookie(dos, "user/login.html", Boolean.parseBoolean(cookieMap.get("logined")));
+                }
+            }
+
+            byte[] readData = Files.readAllBytes(new File("./webapp" + url).toPath());
+
+            //byte[] readData = dispatcher.disaptch(url);
             //byte[] readData = Files.readAllBytes(new File("./webapp" + url).toPath());
 
-            DataOutputStream dos = new DataOutputStream(out);
             response200Header(dos, readData.length, url);
             responseBody(dos, readData);
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302HeaderWithCookie(DataOutputStream dos, String redirectUrl, boolean loginStatus) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
+            dos.writeBytes("Location: http://localhost:9090/" + redirectUrl + "\r\n");
+            dos.writeBytes("Set-Cookie: logined=" + loginStatus + "\r\n");
+            dos.writeBytes("\r\n");
+        } catch (IOException e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void response302Header(DataOutputStream dos) {
+        try {
+            dos.writeBytes("HTTP/1.1 302 FOUND \r\n");
+            dos.writeBytes("Location: http://localhost:9090/index.html\r\n");
+            dos.writeBytes("\r\n");
         } catch (IOException e) {
             log.error(e.getMessage());
         }

@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class IOUtils {
     /**
@@ -38,12 +39,74 @@ public class IOUtils {
         }
     }
 
-    public static String getUrlFromFirstLine(String input) {
 
-        if (Strings.isNullOrEmpty(input)) {
+    public static String getMethodTypeFromHeader(String header) {
+
+        String firstLine = header.split("\r\n")[0];
+        return firstLine.split(" ")[0];
+    }
+    public static String getUrlFromHeader(String header) {
+
+        String firstLine = header.split("\r\n")[0];
+        if (Strings.isNullOrEmpty(firstLine)) {
             return "";
         }
-        String[] inputArray = input.split(" ");
+        String[] inputArray = firstLine.split(" ");
         return inputArray[1];
     }
+
+    public static String readHeaders(BufferedReader br, StringBuilder sb) throws IOException {
+
+        String header = "";
+        while((header = br.readLine()) != null && !header.isEmpty()) {
+            sb.append(header).append("\r\n");
+        }
+        return sb.toString();
+    }
+
+    public static String readResponseBody(BufferedReader br, StringBuilder sb, String header) throws IOException {
+
+        String contentLengthStr = getValueFromHeader(header, "Content-Length");
+        if(contentLengthStr.isEmpty()) {
+            return "";
+        }
+
+        int contentLength = Integer.parseInt(contentLengthStr);
+
+
+        char[] bodyChars = new char[contentLength];
+        int totalRead = 0;
+
+        //String responseBody = "";
+        while (totalRead < contentLength) {
+            int charsRead = br.read(bodyChars, totalRead, contentLength - totalRead);
+            if(charsRead == -1) {
+                break;
+            }
+            totalRead += charsRead;
+        }
+        return new String(bodyChars, 0, totalRead);
+    }
+
+    public static String getHostFromHeader(String header) {
+
+        String secondLine = header.split("\r\n")[1];
+        if (Strings.isNullOrEmpty(secondLine)) {
+            return "";
+        }
+        String[] inputArray = secondLine.split(" ");
+        return inputArray[1];
+    }
+
+    public static String getValueFromHeader(String header, String target) {
+        String[] headerArr = header.split("\r\n");
+        String targetHeaderLine = Arrays.stream(headerArr)
+                .filter(line -> line.startsWith(target + ":"))
+                .findFirst()
+                .orElse("");
+        return Strings.isNullOrEmpty(targetHeaderLine) ? "" : targetHeaderLine.split(": ", 2)[1].trim();
+    }
+
+
+
 }

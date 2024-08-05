@@ -29,16 +29,18 @@
   * 마찬가지로 Util 클래스에 getContentType 메소드 작성하여 요청 별 header / body set-up 필요
 
 ### 요구사항 2 - get 방식으로 회원가입
-* 
+* 도메인 / path / 쿼리스트링에 대한 이해
 
 ### 요구사항 3 - post 방식으로 회원가입
-* 
+* http 패킷의 구조
+* read 범위 지정 - 정확한 Content-length만큼 읽어들이지 않으면 무한 루프에 빠진다.
 
 ### 요구사항 4 - redirect 방식으로 이동
-* 
+* 302 응답 헤더의 형식
 
 ### 요구사항 5 - cookie
-* 
+* 상태 유지 방법
+* 세션 / 쿠키
 
 ### 요구사항 6 - stylesheet 적용
 * 

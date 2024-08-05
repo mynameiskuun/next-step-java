@@ -10,6 +10,7 @@ import util.IOUtils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.NoSuchElementException;
 
 public class UrlDispatcher {
 
@@ -22,18 +23,19 @@ public class UrlDispatcher {
         if(url.contains("/user/create")){
 
             String fullPath = url.replace(DOMAIN, "");
-            String parameters = fullPath.substring(fullPath.indexOf("?") + 1, fullPath.length());
+            String queryString = fullPath.substring(fullPath.indexOf("?") + 1, fullPath.length());
 
-            User user = userCreateService.createUser(parameters);
-            log.debug("#### crate user Success. ID : {} | password : {} | name : {} | email : {} ####", user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
-            return ("create user Success." + user.toString()).getBytes();
+            try {
+                User user = userCreateService.createUser(queryString);
+                log.debug("#### crate user Success. ID : {} | password : {} | name : {} | email : {} ####", user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
+                return ("create user Success." + user).getBytes();
+            } catch(NoSuchElementException e) {
+                e.printStackTrace();
+                log.error(e.getMessage());
+                return ("create user failed. Error: " + e.getMessage()).getBytes();
+            }
         }
         return Files.readAllBytes(new File("./webapp" + url).toPath());
-    }
-
-    public String extractUrl(String input) {
-
-        return IOUtils.getUrlFromFirstLine(input);
     }
 
     private boolean hasParameters(String url) {
