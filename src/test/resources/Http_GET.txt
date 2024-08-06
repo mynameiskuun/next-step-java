@@ -1,0 +1,4 @@
+GET /user/create?userId=testId&password=password&name=sknam HTTP/1.1
+Host: localhost:9090
+Connection: keep-alive
+Accept: */*

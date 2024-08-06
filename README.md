@@ -33,17 +33,28 @@
 
 ### 요구사항 3 - post 방식으로 회원가입
 * http 패킷의 구조
-* read 범위 지정 - 정확한 Content-length만큼 읽어들이지 않으면 무한 루프에 빠진다.
+* read 범위 지정 - 정확한 Content-length 만큼 읽어들이지 않으면 무한 루프에 빠진다.
 
 ### 요구사항 4 - redirect 방식으로 이동
-* 302 응답 헤더의 형식
+* 302 응답 헤더의 형식 - ref) https://en.wikipedia.org/wiki/HTTP_302
 
 ### 요구사항 5 - cookie
 * 상태 유지 방법
 * 세션 / 쿠키
 
 ### 요구사항 6 - stylesheet 적용
-* 
+* InputStream, OutputStream에 대한 이해
+* Content-Type 헤더에 대한 이해
 
-### heroku 서버에 배포 후
+
+# 5장. 웹 서버 리팩토링. 서블릿 컨테이너와 서블릿의 관계
+
+### 요구사항 1. 요청 데이터를 처리하는 로직을 별도의 클래스로 분리한다.(HttpRequest)
+
+* HttpRequest 클래스가 생성되는 시점에 inputStream 바인딩.
+* 이후 url, method, body, parameters 동적 생성
+* 테스트코드를 통한 검증
+
+### 요구사항 2. 응답 데이터를 처리하는 로직을 별도의 클래스로 분리한다.(HttpResponse)
+
 * 
