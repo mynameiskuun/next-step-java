@@ -48,14 +48,15 @@ public class RequestHandler extends Thread {
             log.info("requestBody : {}", requestBody);
             log.info("methodType : {}", method);
 
+            HttpResponse response = new HttpResponse();
+
             User user = null;
             if(method.equals("POST") && url.equals("/user/create")) {
                 user = userCreateService.createUser(requestBody);
                 log.debug("#### crate user Success. ID : {} | password : {} | name : {} | email : {} ####", user.getUserId(), user.getPassword(), user.getName(), user.getEmail());
                 byte[] readData = ("create user Success." + user).getBytes();
                 DataBase.addUser(user);
-                response302Header(dos);
-                responseBody(dos, readData);
+                response.forward(url);
                 return;
             }
 
@@ -89,6 +90,7 @@ public class RequestHandler extends Thread {
                     });
 
                     byte[] readData = sb.toString().getBytes();
+
                     response200Header(dos, readData.length, url);
                     responseBody(dos, readData);
                     return;

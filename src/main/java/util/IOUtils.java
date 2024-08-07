@@ -22,17 +22,20 @@ public class IOUtils {
     }
 
     public static String getContentType(String url) {
-        if (url.endsWith(".html")) {
+
+        String excludeParameter = url.substring(0, url.indexOf("?") - 1);
+
+        if (excludeParameter.endsWith(".html")) {
             return "text/html";
-        } else if (url.endsWith(".css")) {
+        } else if (excludeParameter.endsWith(".css")) {
             return "text/css";
-        } else if (url.endsWith(".js")) {
+        } else if (excludeParameter.endsWith(".js")) {
             return "application/javascript";
-        } else if (url.endsWith(".png")) {
+        } else if (excludeParameter.endsWith(".png")) {
             return "image/png";
-        } else if (url.endsWith(".jpg") || url.endsWith(".jpeg")) {
+        } else if (excludeParameter.endsWith(".jpg") || excludeParameter.endsWith(".jpeg")) {
             return "image/jpeg";
-        } else if (url.endsWith(".gif")) {
+        } else if (excludeParameter.endsWith(".gif")) {
             return "image/gif";
         } else {
             return "text/plain";

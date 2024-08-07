@@ -1,24 +1,27 @@
 package webserver;
 
 import com.google.common.base.Strings;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import util.IOUtils;
 
-import java.io.BufferedReader;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.nio.file.Files;
 import java.util.Map;
 
 public class HttpResponse {
 
-    DataOutputStream out;
+    private static final Logger log = LoggerFactory.getLogger(HttpResponse.class);
+    private DataOutputStream dos = null;
     private String firstLine = "HTTP/1.1";
     private int statusCode;
     private String reasonPhrase;
+    private String responseBody;
     private String redirectUrl;
     private Map<String, String> headers;
 
 
-    private void setFirstLine() {
+    private void setFirstLine(int statusCode, String reasonPhrase) {
         String firstLine = "HTTP/1.1" + " " + statusCode + " " + reasonPhrase;
         this.firstLine = firstLine;
     }
@@ -38,8 +41,9 @@ public class HttpResponse {
     public HttpResponse() {
     }
 
-    public HttpResponse(DataOutputStream out) {
-        this.out = out;
+    public HttpResponse(DataOutputStream dos) {
+        this.dos = dos;
+
     }
 
     public void addHeader(String key, String value) {
@@ -48,13 +52,12 @@ public class HttpResponse {
         }
     }
 
-    private String setResponseHeader() {
+    private void setResponseHeader() throws IOException {
         StringBuilder sb = new StringBuilder();
         for (String key : headers.keySet()) {
-            sb.append(firstLine).append("\r\n");
             sb.append("key").append(": ").append(headers.get(key)).append("\r\n");
         }
-        return sb.toString();
+        dos.writeBytes(sb.toString());
     }
     public void response200Header(DataOutputStream dos, int lengthOfBodyContent, String url) {
         try {
@@ -88,23 +91,47 @@ public class HttpResponse {
         }
     }
 
-    public void responseBody(DataOutputStream dos, byte[] body) {
+    private void responseBody(byte[] body) {
         try {
             dos.write(body, 0, body.length);
+            dos.writeBytes("\r\n");
             dos.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
         }
     }
 
-    public void forward() {
-        out.writeBytes();
+    public void forward(String url) throws IOException {
+
+        byte[] readData = Files.readAllBytes(new File("./webapp" + url).toPath());
+        String contentType = IOUtils.getContentType(url);
+        setFirstLine(200, "OK");
+        headers.put("Content-Length", String.valueOf(readData.length));
+        headers.put("Content-Type", contentType);
+        dos.writeBytes(firstLine);
+        setResponseHeader();
+        responseBody(readData);
     }
 
-    public void sendRedirect() {
-        this.statusCode = 302;
-        this.reasonPhrase = "FOUND";
-        this.firstLine = this.firstLine + " " + statusCode + " " + reasonPhrase;
+    public void forwardBody(String url, String body) throws IOException {
+        byte[] readData = body.getBytes();
+        String contentType = IOUtils.getContentType(url);
+        setFirstLine(200, "OK");
+        headers.put("Content-Length", String.valueOf(readData.length));
+        headers.put("Content-Type", contentType);
+        dos.writeBytes(firstLine);
+        setResponseHeader();
+        responseBody(readData);
+    }
+
+    public void sendRedirect(OutputStream out, String redirectUrl) throws IOException {
+        StringBuilder sb = new StringBuilder();
+
+        setFirstLine(302, "FOUND");
+        addHeader("Location", redirectUrl);
+
+        dos.writeBytes(firstLine + "\r\n");
+        setResponseHeader();
     }
 
 
