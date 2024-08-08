@@ -1,9 +1,9 @@
 package webserver;
 
+import http.HttpRequest;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import util.IOUtilsTest;
 
 import java.io.*;
 import java.util.Map;

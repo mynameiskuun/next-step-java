@@ -23,19 +23,17 @@ public class IOUtils {
 
     public static String getContentType(String url) {
 
-        String excludeParameter = url.substring(0, url.indexOf("?") - 1);
-
-        if (excludeParameter.endsWith(".html")) {
-            return "text/html";
-        } else if (excludeParameter.endsWith(".css")) {
+        if (url.contains(".html")) {
+            return "text/html;charset=utf-8";
+        } else if (url.contains(".css")) {
             return "text/css";
-        } else if (excludeParameter.endsWith(".js")) {
+        } else if (url.contains(".js")) {
             return "application/javascript";
-        } else if (excludeParameter.endsWith(".png")) {
+        } else if (url.contains(".png")) {
             return "image/png";
-        } else if (excludeParameter.endsWith(".jpg") || excludeParameter.endsWith(".jpeg")) {
+        } else if (url.contains(".jpg") || url.contains(".jpeg")) {
             return "image/jpeg";
-        } else if (excludeParameter.endsWith(".gif")) {
+        } else if (url.contains(".gif")) {
             return "image/gif";
         } else {
             return "text/plain";

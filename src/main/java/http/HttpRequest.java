@@ -1,4 +1,4 @@
-package webserver;
+package http;
 
 import com.google.common.base.Strings;
 import util.HttpRequestUtils;
